@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.park.mapper.ParkBillMapper">
+    <!-- 批量逻辑删除账单 -->
+    <update id="batchLogicDelete" parameterType="java.util.List">
+        UPDATE park_bill
+        SET del_flag = 2
+        WHERE bill_id IN
+        <foreach item="billId" collection="billIds" open="(" separator="," close=")">
+            #{billId}
+        </foreach>
+    </update>
+    <!-- 批量收款操作 -->
+    <update id="batchCollectBills" parameterType="java.util.List">
+        UPDATE park_bill
+        SET bill_status = 1
+        WHERE bill_id IN
+        <foreach item="billId" collection="billIds" open="(" separator="," close=")">
+            #{billId}
+        </foreach>
+    </update>
+
+
+    <select id="selectBillsWithContractDetails" resultType="com.ruoyi.park.domain.vo.bill.ParkBillListVo">
+
+
+        SELECT
+        park_bill.bill_id,
+        park_bill.tenant_id,
+        park_bill.bill_name,
+        park_bill.bill_start_time,
+        park_bill.bill_end_time,
+        park_bill.bill_status,
+        park_bill.tenant_name,
+        park_bill.bill_overtime,
+        park_bill.description,
+        park_bill.rent_due,
+        park_bill.rent_paid,
+        park_bill.water_fee,
+        park_bill.electricity_fee,
+        park_bill.other_fees,
+        park_bill.refund,
+        park_bill.property_management_fee,
+        park_bill.total_due,
+        park_bill.total_unpaid,
+        park_bill.total_paid,
+        park_contract.contract_no,
+        park_contract.contract_name,
+        park_contract.deposit,
+        park_bill.del_flag
+        sys_user.user_name AS tenant_name
+        FROM
+        park_bill
+        INNER JOIN
+        park_contract
+        ON
+        park_bill.contract_id = park_contract.contract_id
+        INNER JOIN
+        park_tenant
+        ON
+        park_contract.tenant_id = park_tenant.tenant_id
+        INNER JOIN
+        sys_user
+        ON
+        park_tenant.user_id = sys_user.user_id
+        WHERE
+        park_bill.del_flag = 0 AND
+        park_contract.del_flag = 0 AND
+        sys_user.del_flag = 0 AND
+        park_tenant.del_flag = 0
+
+
+        <if test="search.tenantName != null and search.tenantName != ''">
+            AND park_bill.tenant_name LIKE CONCAT('%', #{search.customerName}, '%')
+        </if>
+        <if test="search.billNo != null and search.billNo != ''">
+            AND park_bill.bill_name LIKE CONCAT('%', #{search.billNumber}, '%')
+        </if>
+        <if test="search.contractNo != null and search.contractNo != ''">
+            AND park_contract.contract_no LIKE CONCAT('%', #{search.contractNumber}, '%')
+        </if>
+        <if test="search.billMonth != null and search.billMonth != ''">
+            AND park_bill.bill_start_time LIKE CONCAT('%', #{search.billMonth}, '%')
+        </if>
+        <if test="search.billStatus != null and search.billStatus != ''">
+            AND park_bill.bill_status LIKE CONCAT('%', #{search.billStatus}, '%')
+        </if>
+        ORDER BY
+           park_bill.tenant_id
+        <if test="search.sortOrder != null and search.sortOrder != ''">
+            <choose>
+                <when test="search.sortOrder == 'asc'">ASC</when>
+                <when test="search.sortOrder == 'desc'">DESC</when>
+                <otherwise>ASC</otherwise>
+            </choose>
+        </if>
+    </select>
+</mapper>
+

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.park.mapper.ParkRoomMapper">
+
+
+    <select id="pageSelectRoomList" resultType="com.ruoyi.park.domain.vo.room.RoomListVo">
+        SELECT DISTINCT r.room_id,
+                        r.zone_id,
+                        z.zone_name,
+                        r.building_id,
+                        b.building_name,
+                        r.floor_id,
+                        f.floor_name,
+                        r.room_name,
+                        r.room_img,
+                        r.square_measure,
+                        r.house_type,
+                        r.height,
+                        r.decoration_type,
+                        r.rent,
+                        r.rent_type,
+                        r.property_fee,
+                        r.property_unit,
+                        r.shelf_time,
+                        r.shelf_status,
+                        r.room_introduction,
+                        r.del_flag,
+                        r.create_by,
+                        r.create_time,
+                        r.update_by,
+                        r.update_time
+        FROM park_room AS r
+                 LEFT JOIN park_floor AS f ON f.floor_id = r.floor_id
+                 LEFT JOIN park_building AS b ON r.building_id = b.building_id
+                 LEFT JOIN park_zone AS z ON z.zone_id = r.zone_id
+            ${ew.customSqlSegment}
+    </select>
+
+    <select id="getTntRoomList" resultType="com.ruoyi.park.domain.vo.room.TntRoomListVo">
+        SELECT distinct t7.zone_id,
+                        t7.zone_name,
+                        t6.building_id,
+                        t6.building_name,
+                        t5.floor_id,
+                        t5.floor_name,
+                        t4.room_id,
+                        t4.room_name,
+                        t4.square_measure,
+                        t4.rent,
+                        t4.rent_type,
+                        t1.create_time,
+                        t1.approval_status,
+                        t1.approval_opinion,
+                        t1.rent_start_time,
+                        t1.rent_end_time,
+                        t1.house_type,
+                        t8.contract_id
+        FROM park_tenant_room AS t1
+                 LEFT JOIN park_tenant AS t2 ON t1.tenant_id = t2.tenant_id
+            AND t2.del_flag = '0'
+                 LEFT JOIN sys_user AS t3 ON t2.user_id = t3.user_id
+            AND t3.del_flag = '0'
+                 LEFT JOIN park_room AS t4 ON t1.room_id = t4.room_id
+            AND t4.del_flag = '0'
+                 LEFT JOIN park_floor AS t5 ON t4.floor_id = t5.floor_id
+            AND t5.del_flag = '0'
+                 LEFT JOIN park_building AS t6 ON t5.building_id = t6.building_id
+            AND t6.del_flag = '0'
+                 LEFT JOIN park_zone AS t7 ON t6.zone_id = t7.zone_id
+            AND t7.del_flag = '0'
+                 LEFT JOIN park_contract AS t8 ON t8.room_id = t1.room_id
+            AND t8.del_flag = '0'
+            ${ew.customSqlSegment}
+    </select>
+    <select id="getRoomRecords" resultType="com.ruoyi.park.domain.vo.room.RoomRecordsVo">
+        SELECT t2.tenant_id,
+               t4.nick_name,
+               t3.start_time,
+               t3.return_time,
+               t2.id_card_number,
+               t4.email,
+               t4.phonenumber,
+               t1.house_type,
+               t2.home_area,
+               t2.address_details
+        FROM park_tenant_room AS t1
+                 LEFT JOIN
+             park_tenant AS t2 ON t1.tenant_id = t2.tenant_id AND t2.del_flag = 0
+                 LEFT JOIN
+             park_contract AS t3 ON t1.contract_id = t3.contract_id AND t3.del_flag = 0
+                 LEFT JOIN
+             sys_user AS t4 ON t2.user_id = t4.user_id AND t4.del_flag = 0
+        WHERE t1.room_id = #{roomId}
+          AND t1.house_type != '0'
+          AND t1.del_flag = 0
+    </select>
+</mapper>

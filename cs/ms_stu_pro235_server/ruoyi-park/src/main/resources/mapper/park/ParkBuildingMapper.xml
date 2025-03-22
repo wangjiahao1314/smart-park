@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ruoyi.park.mapper.ParkBuildingMapper">
+    <resultMap id="BuildingListVoResult" type="com.ruoyi.park.domain.vo.building.BuildingListVo">
+        <id property="buildingId" column="building_id"/>
+        <result property="buildingName" column="building_name"/>
+        <result property="zoneId" column="zone_id"/>
+        <result property="zoneName" column="zone_name"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="selectBuildingZoneVo">
+        SELECT DISTINCT t1.building_id,
+                        t1.building_name,
+                        t2.zone_id,
+                        t2.zone_name,
+                        t1.remark,
+                        t1.create_by,
+                        t1.create_time
+        FROM park_building AS t1
+                 LEFT JOIN park_zone AS t2 ON t1.zone_id = t2.zone_id
+    </sql>
+
+    <select id="selectBuildingList" resultMap="BuildingListVoResult">
+        <include refid="selectBuildingZoneVo"/>
+        where t1.del_flag = 0 and t2.del_flag = 0
+        <if test="buildingName != null and buildingName != '' ">
+            and t1.building_name like concat('%',#{buildingName},'%')
+        </if>
+        <if test="zoneName != null and zoneName != '' ">
+            and t2.zone_name like concat('%',#{zoneName},'%')
+        </if>
+    </select>
+</mapper>
